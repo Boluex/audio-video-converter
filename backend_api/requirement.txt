@@ -1,0 +1,8 @@
+fastapi 
+uvicorn 
+pydantic 
+moviepy==1.0.3 
+yt-dlp 
+Pillow<10.0
+numpy
+python-multipart

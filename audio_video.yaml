@@ -1,0 +1,86 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audio-video-backend-deployment
+  namespace: audio-video
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audio-video-backend
+  template:
+    metadata:
+      labels:
+        app: audio-video-backend
+    spec:
+      containers:
+      - name: audio-video-container
+        image: boluex/audio-vibes-video-magic_backend:1.0
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audio-video-backend-service
+  namespace: audio-video
+spec:
+  selector:
+    app: audio-video-backend
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: audio-video-frontend-deployment
+  namespace: audio-video
+spec: 
+  replicas: 1
+  selector:
+    matchLabels:
+      app: audio-video-frontend
+  template:
+    metadata:
+      labels:
+        app: audio-video-frontend
+    spec:
+      containers:
+      - name: audio-video-container
+        image: boluex/audio-vibes-video-magic_frontend:2.1
+        ports:
+        - containerPort: 3000
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "500m"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: audio-video-frontend-service
+  namespace: audio-video
+spec:
+  selector:
+    app: audio-video-frontend
+  ports:
+  - protocol: TCP
+    port: 3000
+    targetPort: 3000
+  type: ClusterIP
