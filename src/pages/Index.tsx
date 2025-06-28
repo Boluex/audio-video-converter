@@ -21,9 +21,6 @@ const Index = () => {
               AudioExtract Pro
             </h1>
           </div>
-          <Button variant="outline" className="bg-white/50">
-            Sign In
-          </Button>
         </div>
       </header>
 
