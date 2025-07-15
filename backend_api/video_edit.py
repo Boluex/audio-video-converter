@@ -7,55 +7,42 @@ import textwrap
 
 # --- Helper function for text overlay (using Pillow for advanced text rendering) ---
 def create_text_clip_with_style(text, clip_size, text_style="Minimal", duration=None, fps=24):
-    """
-    Creates a text video clip with specified styling.
-
-    Args:
-        text (str): The text to display.
-        clip_size (tuple): (width, height) of the clip.
-        text_style (str): 'Meme Style', 'Minimal', 'Dynamic', 'Retro'.
-        duration (float): Duration of the text clip in seconds. If None, it will be transparent.
-        fps (int): Frames per second.
-
-    Returns:
-        moviepy.editor.ImageClip: An ImageClip with the rendered text.
-    """
+  
     width, height = clip_size
     
-    # Default text properties
+   
     font_path = None
     font_size = int(height * 0.1)
     text_color = "white"
     stroke_color = "black"
     stroke_width = 0
-    bg_color = None # Transparent by default
+    bg_color = None
 
     if text_style == "Meme Style":
-        # Impact font is not standard; try a common bold system font or specify path
-        font_path = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf" # Common bold font path on Ubuntu
+        
+        font_path = "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf" 
         font_size = int(height * 0.15)
         text_color = "white"
         stroke_color = "black"
         stroke_width = int(font_size * 0.05)
-        text_pos = ('center', 'center') # Position text in the middle
+        text_pos = ('center', 'center') 
         if not os.path.exists(font_path):
             print(f"Warning: Impact-like font not found at {font_path}. Using default.")
-            font_path = None # Fallback to MoviePy's default if not found
+            font_path = None
 
     elif text_style == "Minimal":
-        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" # Simple sans-serif
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
         font_size = int(height * 0.07)
         text_color = "white"
         stroke_width = 0
-        text_pos = ('center', height * 0.8) # Bottom center
+        text_pos = ('center', height * 0.8)
         if not os.path.exists(font_path):
             print(f"Warning: DejaVuSans font not found at {font_path}. Using default.")
             font_path = None
 
     elif text_style == "Dynamic":
-        # Dynamic usually implies animation, which is harder with a static image clip.
-        # We'll apply subtle animation later if needed. For now, focus on static look.
-        font_path = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf" # Bold, modern
+        
+        font_path = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf" 
         font_size = int(height * 0.1)
         text_color = "#FFD700" # Gold color
         stroke_color = "black"
@@ -66,18 +53,18 @@ def create_text_clip_with_style(text, clip_size, text_style="Minimal", duration=
             font_path = None
 
     elif text_style == "Retro":
-        # Use a more blocky/serif font if available, or a system default that looks 'old'
-        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf" # Example serif font
+       
+        font_path = "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf" 
         font_size = int(height * 0.08)
-        text_color = "#FFA07A" # Light Salmon, vintage feel
-        stroke_color = "#8B4513" # Saddle Brown
+        text_color = "#FFA07A" 
+        stroke_color = "#8B4513" 
         stroke_width = int(font_size * 0.03)
-        text_pos = ('center', height * 0.2) # Top center
+        text_pos = ('center', height * 0.2) 
         if not os.path.exists(font_path):
             print(f"Warning: DejaVuSerif font not found at {font_path}. Using default.")
             font_path = None
-    else: # Default if style is not recognized
-        font_path = None # MoviePy default
+    else:
+        font_path = None 
         font_size = int(height * 0.08)
         text_color = "white"
         stroke_color = "black"
@@ -89,25 +76,22 @@ def create_text_clip_with_style(text, clip_size, text_style="Minimal", duration=
         if font_path and os.path.exists(font_path):
             font = ImageFont.truetype(font_path, font_size)
         else:
-            # Fallback for generic font if specified path doesn't exist or is None
-            # Pillow's default is often 'DejaVuSans.ttf' or similar on Linux
+           
             font = ImageFont.truetype("DejaVuSans.ttf", font_size)
     except IOError:
         print(f"Warning: Could not load specified font: {font_path}. Using a default font.")
-        font = ImageFont.load_default() # Fallback for font loading issues
+        font = ImageFont.load_default() 
 
 
-    # Wrap text to fit within width if it's too long
-    # Estimate max line width (rough heuristic)
-    max_line_width = int(width * 0.8 / font_size * 2) # Adjust factor as needed for font
+   
+    max_line_width = int(width * 0.8 / font_size * 2) 
     wrapped_text = textwrap.fill(text, width=max_line_width)
 
-    # Create a transparent image for drawing text
+   
     txt_img = Image.new('RGBA', (width, height), (255, 255, 255, 0))
     d = ImageDraw.Draw(txt_img)
 
-    # Calculate text position (multi-line aware)
-    # Get bounding box for the whole text (Pillow 10.0.0+ has getbbox)
+ 
     bbox = d.textbbox((0,0), wrapped_text, font=font, stroke_width=stroke_width)
     text_width = bbox[2] - bbox[0]
     text_height = bbox[3] - bbox[1]
@@ -116,7 +100,7 @@ def create_text_clip_with_style(text, clip_size, text_style="Minimal", duration=
     if text_pos[0] == 'center':
         x = (width - text_width) / 2
     else:
-        x = text_pos[0] # Assume numerical x if not 'center'
+        x = text_pos[0] 
 
     # Calculate y position
     if text_pos[1] == 'center':
@@ -125,16 +109,14 @@ def create_text_clip_with_style(text, clip_size, text_style="Minimal", duration=
         y = text_pos[1] # Assume numerical y if not 'center'
 
 
-    # Draw text with stroke (if stroke_width > 0)
+  
     if stroke_width > 0:
         d.text((x, y), wrapped_text, font=font, fill=text_color,
                stroke_width=stroke_width, stroke_fill=stroke_color)
     else:
         d.text((x, y), wrapped_text, font=font, fill=text_color)
 
-    # Convert PIL Image to MoviePy ImageClip
-    # The duration is important here. If duration is None, it means the text is transparent
-    # until it's added as an overlay on another clip. If duration is set, it's a static clip.
+ 
     text_clip = mp.ImageClip(np.array(txt_img), duration=duration)
     return text_clip.set_pos(text_pos if text_style != "Meme Style" else ("center", "center"))
 
@@ -147,8 +129,8 @@ def create_video_from_images_and_music(
     transition_duration=1.0,
     music_segment_duration=20.0,
     fps=24,
-    texts=None, # List of dictionaries: [{'text': 'Your text', 'start_time': 0, 'end_time': 5, 'style': 'Minimal'}, ...]
-    video_size=(1280, 720) # Default video resolution
+    texts=None, 
+    video_size=(1280, 720) 
 ):
     """
     Creates a video from a list of images with cross-fade transitions and background music.
