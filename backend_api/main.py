@@ -3,9 +3,8 @@ import shutil
 import uuid
 from typing import List, Optional, Tuple
 import math
-import time # Import the time module for cleanup logic
+import time 
 from fastapi.middleware.cors import CORSMiddleware
-# Import moviepy and its effects
 import moviepy.editor as mp
 import moviepy.video.fx.all as vfx
 import numpy as np
@@ -20,8 +19,8 @@ import traceback # For detailed error logging
 # --- Configuration ---
 UPLOAD_DIR = "uploaded_files"
 OUTPUT_DIR = "processed_outputs"
-MAX_FILE_SIZE_MB = 50  # Maximum file size in MB
-MAX_IMAGES = 5 # Maximum number of images allowed for video creation
+MAX_FILE_SIZE_MB = 50  
+MAX_IMAGES = 5 
 
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -243,17 +242,12 @@ def _create_video_from_images_and_music_logic(
 
 
     try:
-        # --- IMAGE PROCESSING ---
-        # (This part is assumed to be working correctly based on prior logs)
-        # (Keeping it brief here for focus)
+   
         for i, img_path in enumerate(image_paths):
-            # ... (full image processing loop as in your last version) ...
-            # Creates final_clip_for_this_image_slot
-            # processed_image_clips.append(final_clip_for_this_image_slot)
-            # Ensure img_pil is closed within this loop's try/finally
-            pass # Placeholder for brevity, use your full image loop here
+     
+            pass 
 
-        # Re-paste your full image processing loop here
+     
         for i, img_path in enumerate(image_paths):
             print(f"Processing image {i}: {img_path}")
             img_pil = None 
@@ -331,7 +325,7 @@ def _create_video_from_images_and_music_logic(
                         actual_transition = max(0.1, final_clip_for_this_image_slot.duration * 0.5)
                     
                     final_clip_for_this_image_slot = final_clip_for_this_image_slot.crossfadeout(actual_transition)
-                    # print(f"  Image {i} crossfade applied. Final slot duration: {final_clip_for_this_image_slot.duration}, Size: {final_clip_for_this_image_slot.size}")
+                   
                 
                 if not isinstance(final_clip_for_this_image_slot, mp.VideoClip) or final_clip_for_this_image_slot.duration is None or final_clip_for_this_image_slot.duration <= 0:
                     raise ValueError(f"Processed clip for image {i} is invalid. Size: {final_clip_for_this_image_slot.size if final_clip_for_this_image_slot else 'None'}")
@@ -342,7 +336,7 @@ def _create_video_from_images_and_music_logic(
                 if img_pil and hasattr(img_pil, 'close'):
                     img_pil.close()
                     img_pil = None
-        # End of re-pasted image loop
+       
 
         if not processed_image_clips:
             return False, "No valid image clips could be created."
@@ -361,9 +355,9 @@ def _create_video_from_images_and_music_logic(
         print(f"Base video concatenated. Total duration: {total_video_duration}, Size: {base_video.size if hasattr(base_video, 'size') else 'N/A'}")
 
         if texts:
-            # ... (text processing loop as in your last version) ...
+
             pass # Placeholder
-        # Re-paste text loop
+        
         if texts:
             for text_data in texts:
                 text_start_time = 0
@@ -392,7 +386,7 @@ def _create_video_from_images_and_music_logic(
                     if txt_clip_candidate.duration > 0:
                         text_clips_to_composite.append(txt_clip_candidate)
             print(f"Processed {len(text_clips_to_composite)} text clips.")
-        # End of re-pasted text loop
+    
 
 
         if text_clips_to_composite:
@@ -419,7 +413,7 @@ def _create_video_from_images_and_music_logic(
             raise ValueError(f"Final visual clip is invalid. {size_info}")
         print(f"Final visual clip ready. Duration: {final_video_clip.duration}, Size: {final_video_clip.size if hasattr(final_video_clip, 'size') else 'N/A'}")
 
-        # --- AUDIO PROCESSING (REVISED) ---
+        # --- AUDIO PROCESSING ---
         print(f"Attempting to load audio from: {audio_path}")
         if not os.path.exists(audio_path):
             return False, f"Audio file does not exist at path: {audio_path}"
@@ -429,12 +423,12 @@ def _create_video_from_images_and_music_logic(
             return False, f"Audio file is empty at path: {audio_path}"
 
         try:
-            full_audio_clip_main = mp.AudioFileClip(audio_path) # Not using 'with' here
+            full_audio_clip_main = mp.AudioFileClip(audio_path)
             
             print(f"DEBUG AUDIO: full_audio_clip_main created. Duration: {full_audio_clip_main.duration if hasattr(full_audio_clip_main, 'duration') else 'N/A'}")
             if not hasattr(full_audio_clip_main, 'reader') or full_audio_clip_main.reader is None:
                 print("CRITICAL DEBUG AUDIO: full_audio_clip_main.reader is None or missing!")
-                # full_audio_clip_main.close() done in finally
+               
                 return False, "Failed to initialize audio reader for the main audio file."
             else:
                 print(f"DEBUG AUDIO: full_audio_clip_main.reader type: {type(full_audio_clip_main.reader)}")
@@ -443,7 +437,7 @@ def _create_video_from_images_and_music_logic(
                     print("DEBUG AUDIO: Successfully got a test frame from full_audio_clip_main.reader.")
                 except Exception as e_get_frame:
                     print(f"CRITICAL DEBUG AUDIO: Failed to get test frame from full_audio_clip_main.reader: {e_get_frame}")
-                    # full_audio_clip_main.close() done in finally
+                   
                     return False, f"Audio reader for main file failed on get_frame: {e_get_frame}"
 
             if music_segment_start_time >= full_audio_clip_main.duration:
@@ -474,9 +468,9 @@ def _create_video_from_images_and_music_logic(
         except Exception as e_audio_block:
             print(f"ERROR during main audio processing block: {type(e_audio_block).__name__} - {e_audio_block}")
             traceback.print_exc()
-            # Relevant clips will be closed in the main finally block
+           
             return False, f"Failed during audio processing: {e_audio_block}"
-        # --- END AUDIO PROCESSING ---
+      
 
         print("Audio processed and attached.")
         
@@ -524,16 +518,15 @@ def _create_video_from_images_and_music_logic(
                 print(f"Closing text_clip {i_clip}")
                 clip.close()
         
-        # Close audio clips in reverse order of dependency or if they are distinct objects
+        
         if audio_segment_final_for_video and hasattr(audio_segment_final_for_video, 'close'):
-            # If this is the same object as temp_audio_segment_intermediate, it's closed once.
-            # If it's different (e.g., after a loop or subclip that creates a new obj), close it.
+            
             print("Closing audio_segment_final_for_video")
             audio_segment_final_for_video.close()
         
         if temp_audio_segment_intermediate and hasattr(temp_audio_segment_intermediate, 'close') and \
            (audio_segment_final_for_video is None or temp_audio_segment_intermediate is not audio_segment_final_for_video):
-            # Close temp only if it's a distinct intermediate object and hasn't been closed
+            
             print("Closing temp_audio_segment_intermediate")
             temp_audio_segment_intermediate.close()
             
@@ -544,9 +537,8 @@ def _create_video_from_images_and_music_logic(
 
     return True, output_path
 
-# --- API Endpoints ---
-# (Remain the same as your last full version)
-# ... (copy and paste all your endpoint functions here: upload_file, extract_audio, etc.) ...
+
+
 @app.post("/uploadfile/", response_model=UploadFileResponse, summary="Upload a file (video, image, or audio)")
 async def upload_file(file: UploadFile = File(...)):
     if file.size is None or file.size > MAX_FILE_SIZE_MB * 1024 * 1024:
